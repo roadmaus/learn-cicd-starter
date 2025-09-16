@@ -24,4 +24,4 @@ You do *not* need to set up a database or any interactivity on the webpage yet. 
 
 Roadmause's version of Boot.dev's Notely app. 
 
-![test results](https://github.com/roadmaus/learn-cicd-starter/.github/workflows/ci.yml/badge.svg)
+![CI Tests](https://github.com/roadmaus/learn-cicd-starter/actions/workflows/ci.yml/badge.svg)
