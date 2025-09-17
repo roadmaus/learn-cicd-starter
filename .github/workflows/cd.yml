@@ -20,7 +20,7 @@ jobs:
       - name: Build binary
         run: ./scripts/buildprod.sh
 
-      # ✅ Authenticate with GCP using the JSON key secret
+      # ✅ Authenticate with GCP using the JSON key
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
