@@ -8,6 +8,11 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+
+    # Make DATABASE_URL available to all steps in this job
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -17,28 +22,36 @@ jobs:
         with:
           go-version: "1.25.1"
 
+      # Install goose (migration CLI)
+      - name: Install goose
+        run: |
+          go install github.com/pressly/goose/v3/cmd/goose@latest
+          echo "goose installed to $(go env GOPATH)/bin"
+
       - name: Build binary
         run: ./scripts/buildprod.sh
 
-      # ✅ Authenticate with GCP using the JSON key
+      # Authenticate to GCP using the service account JSON stored in secret
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      # ✅ Set up gcloud CLI
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v3
         with:
           version: '>= 363.0.0'
 
-      # ✅ Build + push Docker image to Artifact Registry
       - name: Build and Push Docker image
         run: |
           gcloud builds submit \
             --tag us-central1-docker.pkg.dev/notely-2025/notely-ar-repo/notely:latest .
 
-      # ✅ Deploy to Cloud Run
+      # Run DB migrations (uses DATABASE_URL from job env)
+      - name: Run DB migrations with goose
+        run: ./scripts/migrateup.sh
+
+      # Deploy to Cloud Run (only runs if migrations succeed)
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy notely \
